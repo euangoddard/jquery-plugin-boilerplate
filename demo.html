@@ -1,0 +1,271 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Demo of jquery-plugin-boilerplate</title>
+        <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
+        <link rel="stylesheet" href="css/prettify.css" type="text/css">
+    </head>
+    
+    <body>
+        <div class="container">
+            <div class="page-header">
+                <h1>Demo of jquery-plugin-boilerplate</h1>
+            </div>
+            <div class="row">
+                <div class="span5">
+                    <h2>Simple function</h2>
+                    <p>
+                        In the simplest case, we can pass a function to
+                        <code>$.register</code>.
+                    </p>
+                    <p>
+                        In this case, the plugin simply echos its name to
+                        demonstrate that <code>this.element</code> is
+                        the jQuery element in question and 
+                        <code>this.plugin_name</code> is what the plugin is
+                        called.
+                    </p>
+                    <div class="alert alert-block">
+                        <strong>Warning</strong> Contrary to the usual jQuery
+                        type behaviour, of the function context (<code>this</code>)
+                        being the jQuery object in question, <code>$.register</code>
+                        sets <code>this</code> to be the plugin itself and the
+                        element is available as <code>this.element</code>.
+                    </div>
+                    <hr>
+                    <p>
+                        <a href="#" class="btn btn-primary" id="whats_my_name_test">Run demo</a>
+                        <span></span>
+                    </p>
+                </div>
+                <div class="span7">
+                    <pre class="prettyprint linenums example">
+$.register('whats_my_name', {}, function () {
+    this.element.text(this.plugin_name);
+});
+$(function () {
+    $(document).on('click', '#whats_my_name_test', function (e) {
+        e.preventDefault();
+        $(this).next('span').whats_my_name();
+    });
+});
+                    </pre>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="span5">
+                    <h2>Options</h2>
+                    <p>
+                        jQuery plugins generally need a set of options to
+                        function and most provide a set of defaults. This demo
+                        sets ups those defaults by passing them as the second
+                        argument to <code>$.register</code> and shows the options
+                        that result from a combination of the defaults and the
+                        options passed.
+                    </p>
+                    <hr>
+                    <a href="#" class="btn btn-primary" id="echo_settings_test">Run demo</a>
+                    <pre id="echo_settings_results"></pre>
+                </div>
+                <div class="span7">
+                    <pre class="prettyprint linenums example">
+$.register(
+    'echo_settings',
+    {
+        width: 100,
+        height: 100
+    },
+    function () {
+        var html = '{\n';
+        $.each(this.options, function (name, value) {
+            html += '  "' + name + '": "' + value + '",\n';
+        });
+        html += '}';
+        this.element.html(html);
+    }
+);
+
+$(function () {
+    $(document).on('click', '#echo_settings_test', function (e) {
+        e.preventDefault();
+        $('#echo_settings_results').echo_settings({
+            depth: 90,
+            width: 150
+        });
+    });
+});
+                    </pre>
+                </div>
+            </div>
+        
+            <hr>
+            <div class="row">
+                <div class="span5">
+                    <h2>Isolation</h2>
+                    <p>
+                        When a simple function is passed to <code>$.register</code>,
+                        it is called for each element independently and each
+                        call knows nothing about any other elements.
+                    </p>
+                    <p>
+                        Moreover, no information is shared between subsequent
+                        calls to the plugin
+                    </p>
+                    <hr>
+                    <a href="#" class="btn btn-primary" id="isolation_test">Run demo</a>
+                    <ol>
+                        <li data-test="One"></li>
+                        <li data-test="Two"></li>
+                        <li data-test="Three"></li>
+                    </ol>
+                    <ul>
+                        <li data-test="Apples"></li>
+                        <li data-test="Bananas"></li>
+                        <li data-test="Clementines"></li>
+                    </ul>
+                </div>
+                <div class="span7">
+                    <pre class="prettyprint linenums example">
+$.register('isolated', {}, function () {
+    this.element.text(this.element.data('test'));
+});
+
+$(function () {
+    $(document).on('click', '#isolation_test', function (e) {
+        e.preventDefault();
+        var $link = $(this);
+        $link.siblings('ol').children('li').isolated();
+        $link.siblings('ul').children('li').isolated();
+    });
+});
+                    </pre>
+                </div>
+            </div>
+            
+            <hr>
+            <div class="row">
+                <div class="span5">
+                    <h2>Methods</h2>
+                    <p>
+                        Sometimes plugins need to have methods to trigger other
+                        behaviour. This can be achieved by passing an object as
+                        the third argument into <code>$.register</code> instead of
+                        a function.
+                    </p>
+                    <p>
+                        The object must have a function with the name
+                        <code>init</code>. This acts as the <em>constructor</em>
+                        for the plugin and will be executed when you call the
+                        plugin with no arguments or with an object as the sole
+                        argument.
+                    </p>
+                    <p>
+                        To call other methods, you can do, e.g.
+                        <code>$.your_plugin('method');</code>. This will call
+                        the method named <em>method</em> with the context being
+                        the plugin (so that <code>this.element</code> is available)
+                    </p>
+                    <hr>
+                    <a href="#" class="btn btn-primary" id="method_construct">Start plugin</a>
+                    <a href="#" class="btn" id="method_next">Increment</a>
+                    <h6></h6>
+                </div>
+                <div class="span7">
+                    <pre class="prettyprint linenums example">
+$.register(
+    'incrementor',
+    {value: 0},
+    {
+        // Code that gets called when the plugin starts
+        // i.e. $.incrementor();
+        init: function () {
+            this.value = this.options.value;
+            this.increment();
+        },
+        
+        // Code the gets called for $.incrementor('increment');
+        increment: function () {
+            this.value += 1;
+            this.element.text(this.value);
+        }
+    }
+);
+
+$(function () {
+    $(document).on('click', '#method_construct', function (e) {
+        e.preventDefault();
+        $(this).siblings('h6').incrementor();
+    });
+    
+    $(document).on('click', '#method_next', function (e) {
+        e.preventDefault();
+        $(this).siblings('h6').incrementor('increment');
+    });
+});
+                    </pre>
+                </div>
+            </div>
+            
+                        <hr>
+            <div class="row">
+                <div class="span5">
+                    <h2>Extra arguments</h2>
+                    <p>
+                        <code>$.register</code> allows you to pass extra arguments
+                        to the plugins methods.
+                    </p>
+                    <div class="alert">
+                        <strong>Warning</strong> No extra arguments can be
+                        passed to the constructor. Everything must be passed as
+                        options.
+                    </div>
+                    <hr>
+                    <a href="#" class="btn btn-primary" id="start_args_demo">Start plugin</a>
+                    <input id="args_demo_input" placeholder="Type something" type="text">
+                    <h6 id="args_demo_output"></h6>
+                </div>
+                <div class="span7">
+                    <pre class="prettyprint linenums example">
+$.register(
+    'hello',
+    {}, 
+    {
+        init: function () {
+            this.target = this.options.target;
+        },
+        say: function (text) {
+            this.target.text('Hello, ' + text);
+        }
+    }
+);
+
+$(function () {
+    $(document).on('click', '#start_args_demo', function (e) {
+        e.preventDefault();
+        $('#args_demo_input').hello({target: $('#args_demo_output')});
+    });
+
+    $(document).on('keyup', '#args_demo_input', function () {
+        $(this).hello('say', $(this).val());
+    });
+
+});
+                    </pre>
+                </div>
+            </div>
+        </div>
+        <script src="lib/prettify.js"></script>
+        <script src="lib/jquery-1.7.2.min.js"></script>
+        <script src="jquery-plugin-boilerplate.js"></script>
+        <script>
+            $(function () {
+                $('pre.example').each(function () {
+                    eval($(this).html());
+                });
+            });
+            
+            $(window).on('load', prettyPrint);
+        </script>
+    </body>
+</html>
