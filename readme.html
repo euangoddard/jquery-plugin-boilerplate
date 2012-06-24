@@ -1,0 +1,377 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Demo of jquery-plugin-boilerplate</title>
+        <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
+        <link rel="stylesheet" href="css/prettify.css" type="text/css">
+    </head>
+    
+    <body>
+        <div class="container">
+            <div class="page-header">
+                <h1>
+                    jquery-plugin-boilerplate
+                    <small>keeping the pain of writing jQuery plugins to a minimum</small>
+                </h1>
+            </div>
+            <div class="row">
+                <div class="span12">
+                    <h2>Introduction</h2>
+                    <p>
+                        jQuery is awesome and writing plugins allows a great way to 
+                        extend the default behaviour of the library. However,
+                        when you've written more than a few plugins you realize
+                        that you writing the same code again and again to wrap
+                        the <em>actual</em> functionality of your plugin.
+                    </p>
+                    <p>
+                        jquery-plugin-boilerplate takes care of the boring part
+                        of plugin authoring and allows you to define three things
+                        necessary to get your plugin up and running:
+                    </p>
+                    <ol>
+                        <li>The name of the plugin</li>
+                        <li>The default settings</li>
+                        <li>The function or prototype to do the work of the plugin</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span12">
+                    <h2>Getting started</h2>
+                    <p>
+                        Include jquery-plugin-boilerplate on your page:
+                        <code class="prettyprint">&lt;script src="jquery-plugin-boilerplate.js"&gt;&lt;/script&gt;</code>
+                    </p>
+                    <p>
+                        Define your plugin as follows:
+                    </p>
+                    <pre class="prettyprint linenums">
+(function ($) {
+    $.register(name_of_plugin, {default_settings: 'here'}, function () {
+        // plugin code goes here
+    });
+})(jquery);
+                    </pre>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="span12">
+                    <h2>Examples</h2>
+                    <p>
+                        All examples are taken from the
+                        <a href="http://docs.jquery.com/Plugins/Authoring">jQuery plugin authoring page</a>
+                        and realized using jquery-plugin-boilerplate.
+                    </p>
+                    <h3>Maintaining Chainability</h3>
+                    <p>
+                        jquery-plugin-boilerplate ensures that the wrapped set
+                        of elements is always returned.
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span5">
+                    <h5>jQuery example</h5>
+                    <pre class="prettyprint linenums example">
+(function ($) {
+
+    $.fn.lockDimensions = function(type) {
+
+        return this.each(function () {
+
+            var $this = $(this);
+
+            if (!type || type == 'width') {
+                $this.width($this.width());
+            }
+
+            if (!type || type == 'height') {
+                $this.height($this.height());
+            }
+
+        });
+
+    };
+})(jQuery);
+                    </pre>
+                </div>
+                <div class="span7">
+                    <h5>jquery-plugin-boilerplate example</h5>
+                    <pre class="prettyprint linenums example">
+(function ($) {
+
+    $.register('lockDimensions', {type: null}, function () {
+        var type = this.options.type;
+        
+        if (!type || type == 'width') {
+            this.element.width(this.element.width());
+        }
+
+        if (!type || type == 'height') {
+            this.element.height(this.element.height());
+        }
+
+    });
+
+})(jQuery);
+                    </pre>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span12">
+                    <h4>Notes</h4>
+                    <ul>
+                        <li>
+                            In the example, the plugin function to be evaluated
+                            for each element receives the element as
+                            <code>this.element</code> rather than
+                            <code>$(this)</code>.
+                        </li>
+                        <li>
+                            The plugin function cannot receive the argument
+                            <code>type</code> directly. Any options must be
+                            passed as an object. In this case, we define a
+                            default object <code>{type: null}</code>
+                        </li>
+                        <li>
+                            The return value of the plugin function doesn't
+                            matter as the factory will ensure that the wrapped
+                            set is always returned to the callee.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        
+            <hr>
+            
+            <div class="row">
+                <div class="span12">
+                    <h3>Defaults and Options</h3>
+                    <p>
+                        One of the sources of code repetition is always
+                        ensuring that any options passed to the plugin are
+                        correctly combined with any default options.
+                    </p>
+                    <p>
+                        This is automatically done for you when using 
+                        jquery-plugin-boilerplate in the form of <code>this.options</code>
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span6">
+                    <h5>jQuery example</h5>
+                    <pre class="prettyprint linenums example">
+(function ($) {
+
+    $.fn.tooltip = function (options) {
+
+        // Create some defaults, extending them with any options that were provided
+        var settings = $.extend({
+            'location': 'top',
+            'background-color': 'blue'
+        }, options);
+
+        return this.each(function () {
+
+            // Tooltip plugin code here
+
+        });
+
+    };
+})(jQuery);
+</pre>
+                </div>
+                <div class="span6">
+                    <h5>jquery-plugin-boilerplate example</h5>
+                    <pre class="prettyprint linenums example">
+(function ($) {
+
+    $.register(
+        'tooltip',
+        {
+            'location': 'top',
+            'background-color': 'blue'
+        },
+        function () {
+            // Tooltip plugin code here
+            // combined options accessed by this.options
+        });
+
+})(jQuery);
+                    </pre>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span12">
+                    <h4>Use case</h4>
+                    <pre class="prettyprint linenums">
+// Call plugin
+$('div').tooltip({
+  'location': 'left'
+});
+
+// Final options
+{
+    'location': 'left',
+    'background-color': 'blue'
+}
+</pre>
+                    <h4>Notes</h4>
+                    <ul>
+                        <li>
+                            In both cases if we call the plugin as in the use
+                            case, the plugin receives the final options as shown
+                            above. In the case of the jQuery example this will
+                            be assigned to <code>settings</code> and in the 
+                            jquery-plugin-boilerplate example, it will be
+                            <code>this.settings</code>.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        
+            <hr>
+            <div class="row">
+                <div class="span12">
+                    <h3>Plugin methods</h3>
+                    <p>
+                        As mentioned in the <a href="http://docs.jquery.com/Plugins/Authoring">jQuery plugin authoring page</a>:
+                    </p>
+                    <blockquote>
+                        <p>
+                        Under no circumstance should a single plugin ever claim
+                        more than one namespace in the <code>jQuery.fn</code> object ...
+                        you should collect all of your plugin's methods in an
+                        object literal and call them by passing the string name of the method to the plugin.
+                        </p>
+                    </blockquote>
+                    <p>
+                        jquery-plugin-boilerplate caters for this behaviour by
+                        receiving a similar object literal in <code>$.register</code>
+                        instread of a simple function. This acts as a prototype
+                        for the plugin.
+                    </p>
+                    <div class="alert alert-info">
+                        <strong>Note</strong> you must name the main setup method
+                        <code>init</code> to make the plugin work correctly.
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span7">
+                    <h5>jQuery example</h5>
+                    <pre class="prettyprint linenums example">
+(function ($) {
+
+    var methods = {
+        init: function (options) { 
+            // THIS 
+        },
+        show: function () {
+            // IS
+        },
+        hide: function () {
+            // GOOD
+        },
+        update: function (content) { 
+            // !!!
+        }
+    };
+
+    $.fn.tooltip = function (method) {
+        
+        // Method calling logic
+        if (methods[method]) {
+            return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
+        } else if (typeof method === 'object' || ! method) {
+            return methods.init.apply(this, arguments);
+        } else {
+            $.error('Method ' +    method + ' does not exist on jQuery.tooltip');
+        }
+    
+    };
+
+})(jQuery);
+</pre>
+                </div>
+                <div class="span5">
+                    <h5>jquery-plugin-boilerplate example</h5>
+                    <pre class="prettyprint linenums example">
+(function ($) {
+
+    $.register('tooltip', {}, {
+        init: function (options) { 
+            // THIS 
+        },
+        show: function () {
+            // IS
+        },
+        hide: function () {
+            // GOOD
+        },
+        update: function (content) { 
+            // !!!
+        });
+
+})(jQuery);
+                    </pre>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span12">
+                    <h4>Use case</h4>
+                    <pre class="prettyprint linenums">
+// Calls the init method
+$('div').tooltip(); 
+
+// Calls the init method with some options
+$('div').tooltip({
+  foo : 'bar'
+});
+
+// Calls the hide method
+$('div').tooltip('hide'); 
+
+// Calls the update method
+$('div').tooltip('update', 'This is the new tooltip content!'); 
+</pre>
+                    <h4>Notes</h4>
+                    <ul>
+                        <li>
+                            This use case exemplifies the large code saving that
+                            jquery-plugin-boilerplate delivers &ndash; there is
+                            a lot of boilerplate in creating plugins with methods.
+                        </li>
+                        <li>
+                            All instances of the plugin are totally isolated.
+                            Any assignments to <code>this</code> are kept to the
+                            plugin instance corresponding the specific DOM
+                            element that the plugin is bound to.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        
+            <hr>
+            
+            <div class="row">
+                <div class="span12">
+                    <h2>Want more?</h2>
+                    <p>
+                        To read more about what you could do with
+                        jquery-plugin-boilderplate, take a look at the
+                        <a href="demo.html">interactive demos</a>.
+                    </p>
+                </div>
+            </div>
+            
+        <script src="lib/prettify.js"></script>
+        <script src="lib/jquery-1.7.2.min.js"></script>
+        <script>
+            $(window).on('load', prettyPrint);
+        </script>
+    </body>
+</html>
